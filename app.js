@@ -1,5 +1,5 @@
 // ====================================================================
-// !!! KRUSIAL: GANTI URL INI DENGAN URL DEPLOYMENT UNTUK doPost ANAMNESA ANDA !!!
+// URL APPS SCRIPT
 // ====================================================================
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwwS5GtkCaffEV1p-VwHCs2Wh7aOr-UFGNi7OOB61esfTrPnuvVMr7a8uVi8-mUHorqtg/exec'; 
 
@@ -56,7 +56,7 @@ toggleSebutkanField();
 
 
 // ========================================================
-// 3. CONDITIONAL DISPLAY — KEBIASAAN (ALKOHOL, ROKOK, OLAHRAGA)
+// 3. CONDITIONAL DISPLAY — KEBIASAAN (ALKOHOL, ROKOK)
 // ========================================================
 function setupConditionalInput(radioYesId, radioNoId, textInputSelector) {
     const yes = document.getElementById(radioYesId);
@@ -85,8 +85,54 @@ setupConditionalInput("alk_ya", "alk_tidak", "input[name='jumlah_alkohol']");
 // Merokok
 setupConditionalInput("rokok_ya", "rokok_tidak", "input[name='jumlah_rokok']");
 
-// Olahraga
-setupConditionalInput("ol_ya", "ol_tidak", "input[name='frekuensi_olahraga']");
+
+// ========================================================
+// 3B. CONDITIONAL DISPLAY — OLAHRAGA (frekuensi + jenis)
+// ========================================================
+const olYa = document.getElementById("ol_ya");
+const olTidak = document.getElementById("ol_tidak");
+const freqInput = document.querySelector("input[name='frekuensi_olahraga']");
+const jenisContainer = document.createElement("div");
+
+// Buat container jenis olahraga
+jenisContainer.id = "jenis_olahraga_container";
+jenisContainer.style.display = "none";
+jenisContainer.innerHTML = `
+    <label>Jenis Olahraga yang dilakukan:</label>
+    <input type="text" name="jenis_olahraga" id="jenis_olahraga_input">
+`;
+
+// Sisipkan setelah frekuensi olahraga
+freqInput.parentElement.insertAdjacentElement("afterend", jenisContainer);
+
+const jenisInput = document.getElementById("jenis_olahraga_input");
+
+function toggleOlahraga() {
+    if (olYa.checked) {
+        // tampilkan frekuensi
+        freqInput.style.display = 'inline-block';
+        freqInput.required = true;
+
+        // tampilkan jenis olahraga
+        jenisContainer.style.display = 'block';
+        jenisInput.required = true;
+
+    } else {
+        // sembunyikan frekuensi
+        freqInput.style.display = 'none';
+        freqInput.value = '';
+        freqInput.required = false;
+
+        // sembunyikan jenis olahraga
+        jenisContainer.style.display = 'none';
+        jenisInput.value = '';
+        jenisInput.required = false;
+    }
+}
+
+olYa.addEventListener("change", toggleOlahraga);
+olTidak.addEventListener("change", toggleOlahraga);
+toggleOlahraga();
 
 
 // ========================================================
@@ -121,9 +167,9 @@ if (form) {
                 // Reset semua conditional field
                 toggleKeluhanField();
                 toggleSebutkanField();
+                toggleOlahraga();
                 setupConditionalInput("alk_ya", "alk_tidak", "input[name='jumlah_alkohol']");
                 setupConditionalInput("rokok_ya", "rokok_tidak", "input[name='jumlah_rokok']");
-                setupConditionalInput("ol_ya", "ol_tidak", "input[name='frekuensi_olahraga']");
 
             } else {
                 throw new Error(data.message || 'Gagal menyimpan data ke Apps Script.');
@@ -136,3 +182,4 @@ if (form) {
         });
     });
 }
+
